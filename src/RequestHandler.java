@@ -65,7 +65,8 @@ public class RequestHandler implements Runnable {
 	 */
 	@Override
 	public void run() {
-
+	    try
+	    {
 		// Get Request from client
 		String requestString;
 		try{
@@ -88,6 +89,9 @@ public class RequestHandler implements Runnable {
 		// Remove everything past next space
 		urlString = urlString.substring(0, urlString.indexOf(' '));
 
+		
+		System.out.println("URL String:"+urlString);
+		
 		// Prepend http:// if necessary to create correct URL
 		if(!urlString.substring(0,4).equals("http")){
 			String temp = "http://";
@@ -120,6 +124,20 @@ public class RequestHandler implements Runnable {
 				sendNonCachedToClient(urlString);
 			}
 		}
+	    }
+	    catch (RuntimeException|Error e)
+	    {
+	        try
+            {
+                clientSocket.close();
+            }
+            catch (IOException e1)
+            {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+	        throw e;
+	    }
 	} 
 
 

@@ -45,7 +45,7 @@ public class Proxy implements Runnable{
 	// Main method for the program
 	public static void main(String[] args) {
 		// Create an instance of Proxy and begin listening for connections
-		Proxy myProxy = new Proxy(8085);
+		Proxy myProxy = new Proxy(9090);
 		myProxy.listen();	
 	}
 
@@ -103,11 +103,18 @@ public class Proxy implements Runnable{
 				System.out.println("No cached sites found - creating new file");
 				cachedSites.createNewFile();
 			} else {
-				FileInputStream fileInputStream = new FileInputStream(cachedSites);
-				ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-				cache = (HashMap<String,File>)objectInputStream.readObject();
-				fileInputStream.close();
-				objectInputStream.close();
+                try (FileInputStream fileInputStream = new FileInputStream(cachedSites);
+                        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);)
+                {
+    				cache = (HashMap<String,File>)objectInputStream.readObject();
+    				fileInputStream.close();
+    				objectInputStream.close();
+			    }
+			    catch (IOException e)
+			    {
+                    e.printStackTrace();
+			        cache=new HashMap<>();
+			    }
 			}
 
 			// Load in blocked sites from file
@@ -116,11 +123,18 @@ public class Proxy implements Runnable{
 				System.out.println("No blocked sites found - creating new file");
 				blockedSitesTxtFile.createNewFile();
 			} else {
-				FileInputStream fileInputStream = new FileInputStream(blockedSitesTxtFile);
-				ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-				blockedSites = (HashMap<String, String>)objectInputStream.readObject();
-				fileInputStream.close();
-				objectInputStream.close();
+                try (FileInputStream fileInputStream = new FileInputStream(blockedSitesTxtFile);
+                        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);)
+                {
+                    blockedSites = (HashMap<String, String>) objectInputStream.readObject();
+                    fileInputStream.close();
+                    objectInputStream.close();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                    blockedSites = new HashMap<>();
+                }
 			}
 		} catch (IOException e) {
 			System.out.println("Error loading previously cached sites file");
